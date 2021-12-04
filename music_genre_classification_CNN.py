@@ -11,7 +11,10 @@ from sklearn.model_selection import train_test_split
 import tensorflow.keras as keras
 import matplotlib.pyplot as plt
 
-# Dataset load
+# =============================================================================
+# Dataset load and process
+# =============================================================================
+
 def load_data(dataset_path):
     """
     Inputs:
@@ -63,87 +66,123 @@ def prepare_dataset(test_size, validation_size):
     input_validation = input_validation[..., np.newaxis]
     
     input_test = input_test[..., np.newaxis]
+    
+    class dataset():
+        class train():
+            X = input_train
+            target = target_train
+            
+        class test():
+            X = input_test
+            target = target_test
+            
+        class val():
+            X = input_validation
+            target = target_validation
 
-    return input_train, input_validation, input_test, target_train, target_validation, target_test
+    return dataset
 
+# =============================================================================
+# CNN build
+# =============================================================================
 
 def build_model(input_shape):
     
-    # Model building (CNN with 5 hidden layers followed by a maxpooling layer)
+    # Model building (CNN with 3 hidden layers followed by a maxpooling layers)
     model = keras.Sequential()
     
     # 1st conv layer
-    model.add(keras.layers.Conv2D(filters = 8 , kernel_size = (3,3) , activation = "relu" , input_shape = input_shape))
-    model.add(keras.layers.MaxPool2D(pool_size = (2,2), strides = (1,1) , padding = "same"))
+    model.add(keras.layers.Conv2D(filters = 32 , kernel_size = (3,3) , activation = "relu" , input_shape = input_shape))
+    model.add(keras.layers.MaxPool2D(pool_size = (3,3), strides = (2,2) , padding = "same"))
     model.add(keras.layers.BatchNormalization()) 
     
     
     # 2nd conv layer
-    model.add(keras.layers.Conv2D(filters = 16 , kernel_size = (3,3) , activation = "relu" , input_shape = input_shape))
-    model.add(keras.layers.MaxPool2D(pool_size = (2,2), strides = (1,1) , padding = "same"))
+    model.add(keras.layers.Conv2D(filters = 32 , kernel_size = (3,3) , activation = "relu"))
+    model.add(keras.layers.MaxPool2D(pool_size = (3,3), strides = (2,2) , padding = "same"))
     model.add(keras.layers.BatchNormalization()) 
     
     # 3rd conv layer
-    model.add(keras.layers.Conv2D(filters = 32 , kernel_size = (3,3) , activation = "relu" , input_shape = input_shape))
-    model.add(keras.layers.MaxPool2D(pool_size = (2,2), strides = (1,1) , padding = "same"))
-    model.add(keras.layers.BatchNormalization()) 
-    
-    # 4th conv layer
-    model.add(keras.layers.Conv2D(filters = 64 , kernel_size = (3,3) , activation = "relu" , input_shape = input_shape))
-    model.add(keras.layers.MaxPool2D(pool_size = (2,2), strides = (1,1) , padding = "same"))
-    model.add(keras.layers.BatchNormalization()) 
-    
-    # 5ft conv layer
-    model.add(keras.layers.Conv2D(filters = 128 , kernel_size = (3,3) , activation = "relu" , input_shape = input_shape))
-    model.add(keras.layers.MaxPool2D(pool_size = (2,2), strides = (1,1) , padding = "same"))
+    model.add(keras.layers.Conv2D(filters = 32 , kernel_size = (2,2) , activation = "relu"))
+    model.add(keras.layers.MaxPool2D(pool_size = (2,2), strides = (2,2) , padding = "same"))
     model.add(keras.layers.BatchNormalization()) 
     
     # Flatten and dense layer
-    model.add(keras.layers.Flatten())       # Flatten
+    model.add(keras.layers.Flatten())                               # Flatten
     model.add(keras.layers.Dense(units = 64 , activation = "relu")) # Dense
-    model.add(keras.layers.Dropout(0.3))    # Dropout (for overfitting)
+    model.add(keras.layers.Dropout(0.3))                            # Dropout (for overfitting)
     
     # Output layer
     model.add(keras.layers.Dense(units=10 , activation = "softmax"))
     
     return model
 
+# =============================================================================
+# CNN train
+# =============================================================================
+
+def train_model(model, dataset, epochs, batch_size = 32):
+
+    optimiser = keras.optimizers.Adam(learning_rate = 0.0001)
+    model.compile(optimizer = optimiser,
+                  loss = "sparse_categorical_crossentropy",
+                  metrics = ['accuracy'])    
+    
+    return model.fit(dataset.train.X , dataset.train.target ,
+                       validation_data = (dataset.val.X , dataset.val.target ), 
+                       batch_size = batch_size , epochs = epochs)
+
+
+# =============================================================================
+# CNN test
+# =============================================================================
+
+def test_model(model, dataset, batch_size = 32):
+    
+    test_loss, test_acc = model.evaluate(dataset.test.X, dataset.test.target, 
+                                         batch_size = batch_size)
+    
+    print("Accuracy on test set is: {}".format(test_acc))
+    
+    return test_loss, test_acc
+
+# =============================================================================
+# CNN predict
+# =============================================================================
 
 def predict(model,input_i,target_i):
-    
+
     input_i = input_i[np.newaxis, ...]
     prediction = model.predict(input_i)
     
-    # Máxima probabilidad de la predicción
+    # Max probability of the prediction
     predicted_index = np.argmax(prediction, axis = 1)
     print("Expected index: {}, Predicted index: {}".format(target_i,predicted_index))
+
+
+# =============================================================================
+# Results
+# =============================================================================
 
 if __name__ == "__main__":
     
     # Dataset process
-    input_train, input_validation, input_test, target_train, target_validation, target_test = prepare_dataset(0.25,0.2)
+    dataset = prepare_dataset(0.25,0.2)
     
-    # CNN building
-    input_shape = (input_train.shape[1],input_train.shape[2],input_train.shape[3])
-    
+    # CNN build
+    input_shape = (dataset.train.X.shape[1],dataset.train.X.shape[2],dataset.train.X.shape[3])
     model = build_model(input_shape)
     
-    # CNN compilation
-    optimiser = keras.optimizers.Adam(learning_rate = 0.00005)
-    model.compile(optimizer = optimiser,
-                  loss = "sparse_categorical_crossentropy",
-                  metrics = ['accuracy'])
+    # CNN train
+    epochs = 70
+    train_model(model , dataset , epochs = epochs)
+
     
-    # CNN training
-    model.fit(input_train,target_train, validation_data = (input_validation, target_validation), 
-              batch_size = 32 , epochs = 70)
-    
-    # Test of the CNN
-    test_error, test_accuracy = model.evaluate(input_test, target_test, verbose = 1)
-    print("Accuracy on test set is: {}".format(test_accuracy))
+    # CNN test
+    test_loss, test_acc = test_model(model,dataset)
 
     # Prediction with the CNN
-    input_i = input_test[100]
-    target_i = target_test[100]
+    input_i = dataset.test.X[100]
+    target_i = dataset.test.target[100]
     
     predict(model,input_i,target_i)

@@ -37,6 +37,7 @@ def dataset_process(dataset_path):
         class train():
             X = X_train
             target = target_train
+            
         class test():
             X = X_test
             target = target_test
@@ -99,6 +100,8 @@ def test_model(model, dataset, batch_size = 128):
     test_loss, test_acc = model.evaluate(dataset.test.X, dataset.test.target, 
                                          batch_size = batch_size)
     
+    print("Accuracy on test set is: {}".format(test_acc))
+    
     return test_loss, test_acc
     
     
@@ -106,22 +109,24 @@ def test_model(model, dataset, batch_size = 128):
 # Results
 # =============================================================================
 
+if __name__ == "__main__":
+
     # Dataset process
-dataset_path = "features_3_sec.csv"
-dataset = dataset_process(dataset_path)
-
+    dataset_path = "features_3_sec.csv"
+    dataset = dataset_process(dataset_path)
+    
     # ANN build
-input_shape = dataset.train.X.shape[1] 
-model = build_model(input_shape)
-    
+    input_shape = dataset.train.X.shape[1] 
+    model = build_model(input_shape)
+        
     # ANN train
-epochs = 600
-optimizer = "Adam"
-train_model(model , dataset , epochs = epochs, optimizer = optimizer)
-
-    # ANN test
-test_loss, test_acc = test_model(model,dataset)
+    epochs = 600
+    optimizer = "Adam"
+    train_model(model , dataset , epochs = epochs, optimizer = optimizer)
     
+    # ANN test
+    test_loss, test_acc = test_model(model,dataset)
+        
     
     
     
