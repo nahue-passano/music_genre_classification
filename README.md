@@ -1,3 +1,3 @@
-# music_genre_classification_ANN
+# music_genre_classification
 
 (Under construction)
