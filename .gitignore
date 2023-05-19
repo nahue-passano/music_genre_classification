@@ -1,0 +1,5 @@
+.venv
+datasets/*
+
+# Exceptions
+!datasets/get-dataset.md

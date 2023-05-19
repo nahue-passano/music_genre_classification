@@ -1,0 +1,20 @@
+train_id : <DATE(YYYY-MM-DD)>-<DATASET>
+
+dataset_path : datasets/gtzan/
+
+results_path : results
+
+hyperparameters:
+  epochs : 10
+  learning_rate : 1e-3
+
+preprocessing:
+  # Mel-spectrogram parameters
+  n_fft : 2048
+  hop_lenght : 512
+
+  # Audio parameters
+  audio_sr : 22050
+  audio_len : 30
+  n_chunks : 5
+

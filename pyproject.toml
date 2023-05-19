@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "music-genre-classification"
+version = "0.1.0"
+description = ""
+authors = ["nahue-passano <passano43632@estudiantes.untref.edu.ar>"]
+readme = "README.md"
+packages = [{include = "music_genre_classification"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+black = "^23.3.0"
+pre-commit = "^3.3.2"
+torch = "1.13"
+tqdm = "^4.65.0"
+numpy = "^1.24.3"
+natsort = "^8.3.1"
+librosa = "^0.10.0.post2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
